@@ -1,30 +1,14 @@
-import {
-  mouse,
-  left,
-  right,
-  up,
-  down,
-  screen,
-  singleWord,
-  Point,
-  sleep,
-  useLogger,
-  Region,
-  Image,
-} from "@nut-tree/nut-js";
+import { mouse, Point, sleep } from "@nut-tree/nut-js";
 import Jimp from "jimp";
+import screenshot from "screenshot-desktop";
 
 type RGB = [number, number, number];
 
-const colors: Record<
-  string,
-  { rgb: RGB; offset?: { x?: number; y?: number } }
-> = {
-  "1": { rgb: [51, 127, 202] },
-  // "2": [151, 167, 115],
-  "2": { rgb: [56, 142, 60], offset: { y: 2 } },
+const colors: Record<string, { rgb: RGB }> = {
+  "1": { rgb: [25, 118, 210] },
+  "2": { rgb: [56, 142, 60] },
   "3": { rgb: [211, 47, 47] },
-  "4": { rgb: [123, 31, 162], offset: { x: 4 } },
+  "4": { rgb: [123, 31, 162] },
   "5": { rgb: [239, 175, 100] },
   Green1: { rgb: [162, 209, 73] },
   Green2: { rgb: [170, 215, 81] },
@@ -35,12 +19,12 @@ const colors: Record<
 const numCellsX = 18;
 const numCellsY = 14;
 const pxSizeX = 540;
-const pxSizeY = 480;
+const pxSizeY = 420;
 
 const cellSizePx = pxSizeX / numCellsX;
 
-const offSetY = 172;
-const offSetX = 0;
+const offSetY = 201;
+const offSetX = 74;
 
 function eq(a: number, b: number, e: number) {
   return Math.abs(a - b) < e;
@@ -78,19 +62,27 @@ function yToPos(y: number) {
   return y * cellSizePx + cellSizePx / 2;
 }
 
-async function findColor(img: Jimp, x: number, y: number) {
-  const found = Object.entries(colors).find(([k, v]) => {
-    const posX = xToPos(x) + (v.offset?.x || 0);
-    const posY = xToPos(y) + (v.offset?.y || 0);
-    const rgb = getColorAt(img, posX, posY);
-    return isColor(rgb, v.rgb);
-  });
-  if (!found) {
-    console.log("Not found color", x, y, getColorAt(img, xToPos(x), yToPos(x)));
-    await mouse.move([new Point(xToPos(x), yToPos(x))]);
-    throw new Error();
+const colorsOffsets: [number, number][] = [];
+for (let x = -10; x <= 10; x += 1) {
+  for (let y = -10; y <= 10; y += 1) {
+    colorsOffsets.push([x, y]);
   }
-  return found[0];
+}
+
+async function findColor(img: Jimp, x: number, y: number) {
+  for (const [k, v] of Object.entries(colors)) {
+    for (const [offX, offY] of colorsOffsets) {
+      const posX = xToPos(x) + offX;
+      const posY = xToPos(y) + offY;
+      const rgb = getColorAt(img, posX, posY);
+      if (isColor(rgb, v.rgb)) {
+        return k;
+      }
+    }
+  }
+  console.log("Not found color", x, y, getColorAt(img, xToPos(x), yToPos(x)));
+  await mouse.move([new Point(xToPos(x) + offSetX, yToPos(y) + offSetY)]);
+  throw new Error();
 }
 
 async function getGameImage(
@@ -99,13 +91,11 @@ async function getGameImage(
   width: number,
   height: number
 ) {
-  const img2 = await screen.grabRegion(new Region(x, y, width, height));
-  const img = await img2.toRGB();
-  return new Jimp({
-    data: img.data,
-    width: img.width,
-    height: img.height,
-  });
+  const imgScreen = await screenshot();
+  const jimp = await Jimp.read(imgScreen);
+  jimp.crop(x, y, width, height);
+  // await jimp.writeAsync('img.png');
+  return jimp;
 }
 
 type Cell = {
@@ -153,10 +143,6 @@ function emptyBoard() {
 
 async function fillBoard(board: Board) {
   const img = await getGameImage(offSetX, offSetY, pxSizeX, pxSizeY);
-  // img.write(".capture.jpg");
-
-  // await mouse.move([new Point(20, offSetY)]);
-
   for (let y = 0; y < numCellsY; y++) {
     for (let x = 0; x < numCellsX; x++) {
       const oldCell = getCell(board, x, y);
@@ -288,7 +274,7 @@ async function start() {
   const board = emptyBoard();
   while (!isDone(board)) {
     await fillBoard(board);
-    //prettyBoard(board);
+    // prettyBoard(board);
     const flagChanges = await flagCells(board);
     const revealChanges = await revealCells(board);
     if ((!flagChanges || !revealChanges) && !isDone(board)) {

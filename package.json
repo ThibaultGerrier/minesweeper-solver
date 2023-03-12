@@ -12,8 +12,12 @@
   "dependencies": {
     "@nut-tree/nut-js": "^3.0.0",
     "jimp": "^0.21.0",
-    "prettier": "^2.8.3",
-    "ts-node": "^10.9.1",
+    "screenshot-desktop": "0.0.0-development",
     "typescript": "^4.9.5"
+  },
+  "devDependencies": {
+    "@types/screenshot-desktop": "^1.12.0",
+    "prettier": "^2.8.3",
+    "tsx": "^3.12.4"
   }
 }
