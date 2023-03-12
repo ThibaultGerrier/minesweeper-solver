@@ -11,6 +11,6 @@ Use one of the following online minesweeper websites:
 
 Your tool in the end should be able to solve a board like:
 
-![solve](https://github.com/ThibaultGerrier/minesweeper-solver/blob/master/docs/imgs/solve.gif?raw=true)
+![solve](https://raw.githubusercontent.com/ThibaultGerrier/minesweeper-solver/master/doc/imgs/solve.gif?raw=true)
 
 See [/docs](https://github.com/ThibaultGerrier/minesweeper-solver/docs) for some helpful tips
