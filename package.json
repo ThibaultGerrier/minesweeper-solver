@@ -2,8 +2,9 @@
   "name": "minesweeper",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/main.js",
   "scripts": {
+    "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -11,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@nut-tree/nut-js": "^3.0.0",
+    "electron": "^23.1.4",
     "jimp": "^0.21.0",
     "screenshot-desktop": "0.0.0-development",
     "typescript": "^4.9.5"
